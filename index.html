@@ -150,6 +150,11 @@
     });
 
     window.require(['vs/editor/editor.main'], function () {
+      monaco.languages.cpp.cppDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false
+      });
+
       const saved = localStorage.getItem('cpp-editor-code');
       const editor = monaco.editor.create(document.getElementById('editor'), {
         value: saved || defaultCode,
