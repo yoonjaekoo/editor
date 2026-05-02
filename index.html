@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ Editor | Static GitHub Pages</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#22d3ee; --border:#1f2937; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; color:var(--text); background:radial-gradient(circle at top right,#1e293b 0%,var(--bg) 45%); min-height:100vh; display:grid; grid-template-rows:auto 1fr auto; }
+    header { padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+    .title-wrap { display:flex; flex-direction:column; gap:.25rem; }
+    h1 { margin:0; font-size:1.1rem; }
+    .typing { color:var(--accent); min-height:1.2rem; font-size:.95rem; letter-spacing:.03em; white-space:pre; user-select:none; }
+    .typing::after { content:""; display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:2px; vertical-align:-2px; animation:blink 1s steps(1,end) infinite; }
+    @keyframes blink { 50% { opacity:0; } }
+    .btns { display:flex; gap:.5rem; }
+    button { border:1px solid var(--border); background:#0b1220; color:var(--text); padding:.5rem .75rem; border-radius:.6rem; cursor:pointer; }
+    main { padding:1rem 1.5rem 1.2rem; display:grid; grid-template-rows:auto 1fr; gap:.8rem; min-height:0; }
+    .note { color:var(--muted); font-size:.9rem; }
+    #editor { width:100%; height:70vh; border:1px solid var(--border); border-radius:.8rem; overflow:hidden; box-shadow:0 10px 35px rgba(0,0,0,.25); }
+    footer { color:var(--muted); font-size:.8rem; padding:.8rem 1.5rem 1.2rem; border-top:1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-wrap">
+      <h1>🧠 C++ Code Editor (Static)</h1>
+      <div id="typing" class="typing"></div>
+    </div>
+    <div class="btns">
+      <button id="copyBtn" type="button">복사</button>
+      <button id="downloadBtn" type="button">.cpp 저장</button>
+      <button id="resetBtn" type="button">예제 복원</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="note">GitHub Pages에 그대로 올리면 동작합니다. (백엔드 없음)</div>
+    <div id="editor"></div>
+  </main>
+
+  <footer>Ace Editor + LocalStorage 자동 저장</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js"></script>
+  <script>
+    const defaultCode = `#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n\n    vector<int> nums = {1, 2, 3, 4, 5};\n    int sum = accumulate(nums.begin(), nums.end(), 0);\n    cout << "sum = " << sum << "\\n";\n\n    return 0;\n}`;
+    const typingLines = ["파일명: main.cpp", "저장됨: localStorage", "목표: 빠르게 C++ 코딩하기"];
+
+    const typingEl = document.getElementById('typing');
+    let lineIndex = 0, charIndex = 0, deleting = false;
+    function typeLoop() {
+      const full = typingLines[lineIndex];
+      typingEl.textContent = deleting ? full.slice(0, charIndex--) : full.slice(0, charIndex++);
+      let delay = deleting ? 35 : 65;
+      if (!deleting && charIndex > full.length) { deleting = true; delay = 1200; }
+      else if (deleting && charIndex < 0) { deleting = false; lineIndex = (lineIndex + 1) % typingLines.length; delay = 350; }
+      setTimeout(typeLoop, delay);
+    }
+    typeLoop();
+
+    const saved = localStorage.getItem('cpp-editor-code');
+    const editor = ace.edit('editor', {
+      mode: 'ace/mode/c_cpp',
+      theme: 'ace/theme/monokai',
+      value: saved || defaultCode,
+      fontSize: 14,
+      showPrintMargin: false,
+      useSoftTabs: true,
+      tabSize: 4
+    });
+    editor.session.setUseWrapMode(false);
+    editor.focus();
+
+    editor.session.on('change', () => {
+      localStorage.setItem('cpp-editor-code', editor.getValue());
+    });
+
+    document.getElementById('copyBtn').onclick = async () => {
+      await navigator.clipboard.writeText(editor.getValue());
+    };
+    document.getElementById('downloadBtn').onclick = () => {
+      const blob = new Blob([editor.getValue()], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'main.cpp'; a.click();
+      URL.revokeObjectURL(url);
+    };
+    document.getElementById('resetBtn').onclick = () => { editor.setValue(defaultCode, -1); };
+  </script>
+</body>
+</html>
