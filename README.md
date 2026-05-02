@@ -13,6 +13,7 @@
 ## 기능
 
 - Ace Editor 기반 C++ 편집기
+- Monaco 기반 C++ 편집기
 - 자동 저장(localStorage)
 - 복사 / `.cpp` 다운로드 / 예제 복원
 - 타이핑 애니메이션(Word 스타일 커서 효과)
